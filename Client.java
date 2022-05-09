@@ -5,7 +5,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.*;
 
-public class Client {
+public class Client implements KeyListener {
     String clientName;
     JFrame username, app;
     JPanel panel, inputPanel;
@@ -41,20 +41,7 @@ public class Client {
         enterBtn.setFont(font1);
 
         // when the button is pressed, the method core() is launched
-        enterBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (input.getText().equals(""))
-                    return;
-                
-                clientName = input.getText();
-                
-                try {
-                    core();
-                } catch (IOException e1) {
-                    L1.setText("Server not found...");
-                }
-            }
-        });
+        enterBtn.addActionListener(e -> getUsername());
 
         panel.add(L1);
         panel.add(input);
@@ -68,7 +55,20 @@ public class Client {
         username.setVisible(true);
     }
 
-    public void core() throws UnknownHostException, IOException {
+    private void getUsername() {
+        if (input.getText().equals(""))
+        return;
+    
+        clientName = input.getText();
+        
+        try {
+            core();
+        } catch (IOException e1) {
+            L1.setText("Server not found...");
+        }
+    }
+
+    private void core() throws UnknownHostException, IOException {
         // the method core() manages the connection to the server and starts
         // the chat frame
         this.socket = new Socket("127.0.0.1", 8080);
@@ -88,6 +88,7 @@ public class Client {
         input = new JTextField();
         input.setUI(new HintTextFieldUI("Type here your message...", true));
         input.setFont(font);
+        input.addKeyListener(this);
         
         panel = new JPanel(new BorderLayout());
         inputPanel = new JPanel();
@@ -129,6 +130,7 @@ public class Client {
         app.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         app.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
+                closeEverything(socket);
                 System.exit(0);
             }
         });
@@ -153,10 +155,12 @@ public class Client {
         });
     }
 
-    public void sendMessage(String messageToSend) {
+    private void sendMessage(String messageToSend) {
         try {
-            if (messageToSend.equals("exit()"))
+            if (messageToSend.equals("exit()")) {
+                closeEverything(socket);
                 System.exit(0);
+            }
 
             // add the message to the text area and then send it to the server
             textArea.append("\n" + clientName + ": " + messageToSend);
@@ -168,7 +172,7 @@ public class Client {
     }
 
     // Listening for a message is blocking so need a separate thread for that.
-    public void listenForMessage() {
+    private void listenForMessage() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -186,9 +190,33 @@ public class Client {
         }).start();
     }
 
+    // when the user clicks enter the message is sent
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (input.getText().equals(""))
+                return;
+                
+            sendMessage(input.getText());
+        }       
+    }
+
+    // Helper method to close everything so you don't have to repeat yourself.
+    public void closeEverything(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) { }
+    }
+
     public static void main(String[] args) {
         Client app = new Client();
 
         app.startGui();
     }
+
+    @Override
+    public void keyReleased(KeyEvent arg0) { /* unimplemented method */ }
+
+    @Override
+    public void keyTyped(KeyEvent arg0) { /* unimplemented method */ }
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
  * This way the server can handle multiple clients at the same time.
 */
 
+@SuppressWarnings("unchecked")
 public class ClientHandler implements Runnable {
     // Array list of all the threads handling clients so each message can be sent to the client the thread is handling.
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
@@ -28,10 +29,10 @@ public class ClientHandler implements Runnable {
             this.clientUsername = bufferedReader.readLine();
             // Add the new client handler to the array so they can receive messages from others.
             clientHandlers.add(this);
-            unicastMessage("🙌 Welcome to this Chat Room, " + clientUsername + "!\nUsers connected: " + clientHandlers.size() + "\n");
+            unicastMessage("Welcome to this Chat Room, " + clientUsername + "!\nUsers connected: " + clientHandlers.size() + "\n");
             broadcastMessage("\r😃 SERVER: " + clientUsername + " has entered the chat!\n");
         } catch (IOException | NullPointerException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
+            closeEverything(socket, this);
         }
     }
 
@@ -47,7 +48,7 @@ public class ClientHandler implements Runnable {
                 messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
             } catch (IOException | NullPointerException e) {
-                closeEverything(socket, bufferedReader, bufferedWriter);
+                closeEverything(socket, this);
                 break;
             }
         }
@@ -57,7 +58,9 @@ public class ClientHandler implements Runnable {
     // Basically each client handler is a connection to a client. So for any message that
     // is received, loop through each connection and send it down it.
     public void broadcastMessage(String messageToSend) {
-        for (ClientHandler clientHandler : clientHandlers) {
+        ArrayList<ClientHandler> clone = (ArrayList<ClientHandler>) clientHandlers.clone();
+
+        for (ClientHandler clientHandler : clone) {
             try {
                 // You don't want to broadcast the message to the user who sent it.
                 if (!clientHandler.clientUsername.equals(clientUsername)) {
@@ -66,48 +69,40 @@ public class ClientHandler implements Runnable {
                     clientHandler.bufferedWriter.flush();
                 }
             } catch (IOException | NullPointerException e) {
-                closeEverything(socket, bufferedReader, bufferedWriter);
+                closeEverything(socket, clientHandler);
             }
         }
     }
 
     // Send a message to a client, specifically the last client that established a connection.
     public void unicastMessage(String messageToSend) {
-        for (ClientHandler clientHandler : clientHandlers) {
+        ArrayList<ClientHandler> clone = (ArrayList<ClientHandler>) clientHandlers.clone();
+
+        for (ClientHandler clientHandler : clone) {
             if (clientHandler.clientUsername.equals(clientUsername)) {
                 try {
                     clientHandler.bufferedWriter.write(messageToSend);
                     clientHandler.bufferedWriter.newLine();
                     clientHandler.bufferedWriter.flush();
                 } catch (IOException e) {
-                    closeEverything(socket, bufferedReader, bufferedWriter);
+                    closeEverything(socket, clientHandler);
                 }
             }
         }
     }
 
     // If the client disconnects for any reason remove them from the list so a message isn't sent down a broken connection.
-    public void removeClientHandler() {
-        clientHandlers.remove(this);
+    public void removeClientHandler(ClientHandler clientHandler) {
+        clientHandlers.remove(clientHandler);
         broadcastMessage("\r😢 SERVER: " + clientUsername + " has left the chat!\n");
     }
 
     // Helper method to close everything so you don't have to repeat yourself.
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+    public void closeEverything(Socket socket, ClientHandler clientHandler) {
         // The client disconnected or an error occurred so remove them from the list so no message is broadcasted.
-        removeClientHandler();
+        removeClientHandler(clientHandler);
         try {
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
-            if (bufferedWriter != null) {
-                bufferedWriter.close();
-            }
-            if (socket != null) {
-                socket.close();
-            }
-        } catch (IOException | NullPointerException e) {
-            e.printStackTrace();
-        }
+            socket.close();
+        } catch (IOException e) { }
     }
 }
