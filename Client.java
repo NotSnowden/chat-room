@@ -57,13 +57,13 @@ public class Client implements KeyListener {
 
     private void getUsername() {
         if (input.getText().equals(""))
-        return;
+            return;
     
         clientName = input.getText();
         
         try {
             core();
-        } catch (IOException e1) {
+        } catch (IOException e) {
             L1.setText("Server not found...");
         }
     }
@@ -125,7 +125,7 @@ public class Client implements KeyListener {
         panel.add(scrollPanel, BorderLayout.CENTER);
         panel.add(inputPanel, BorderLayout.PAGE_END);
         
-        app.add(panel, BorderLayout.CENTER);
+        app.add(panel);
         
         app.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         app.addWindowListener(new WindowAdapter() {
