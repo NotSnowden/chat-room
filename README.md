@@ -1,6 +1,8 @@
 # DESCRIPTION
 Yet another chat room program, but this time it's very poorly written in java.
 Any kind of suggestion is welcome.
+The base of the code comes from the Youtuber WittCode, check out his video\
+https://www.youtube.com/watch?v=gLfuZrrfKes&ab_channel=WittCode
 
 
 # INSTALLATION
