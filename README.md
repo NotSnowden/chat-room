@@ -1,9 +1,9 @@
-# DESCRIZIONE
+# DESCRIPTION
 Yet another chat room program, but this time it's written very poorly in java.
 Any kind of suggestion is welcome.
 
 
-# INSTALLAZIONE
+# INSTALLATION
 
 download the repo\
 `git clone https://github.com/NotSnowden/java-chat-room`
