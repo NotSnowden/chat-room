@@ -6,13 +6,13 @@ import java.net.Socket;
 import java.net.*;
 
 public class Client implements KeyListener {
-    String clientName;
+    String clientName, serverIp;
     JFrame username, app;
     JPanel panel, inputPanel;
     GridLayout layout;
     JLabel L1;
     JButton enterBtn;
-    JTextField input;
+    JTextField input, inputIp;
     JTextArea textArea;
     JScrollPane scrollPanel;
     Font font, font1;
@@ -29,22 +29,27 @@ public class Client implements KeyListener {
         panel = new JPanel(new GridLayout(0, 1, 0, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
 
-        L1 = new JLabel("Enter the username");
+        L1 = new JLabel("Enter username and server ip");
         L1.setHorizontalAlignment(JLabel.CENTER);
         L1.setFont(font);
 
         input = new JTextField();
         input.setFont(font);
-        input.setHorizontalAlignment(JTextField.CENTER);
+        input.setUI(new HintTextFieldUI("Type username here...", true));
+
+        inputIp = new JTextField();
+        inputIp.setFont(font);
+        inputIp.setUI(new HintTextFieldUI("Type IP address here...", true));
 
         enterBtn = new JButton("ENTER THE CHAT ROOM");
         enterBtn.setFont(font1);
 
         // when the button is pressed, the method core() is launched
-        enterBtn.addActionListener(e -> getUsername());
+        enterBtn.addActionListener(e -> getInput());
 
         panel.add(L1);
         panel.add(input);
+        panel.add(inputIp);
         panel.add(enterBtn);
 
         username.add(panel, BorderLayout.CENTER);
@@ -55,11 +60,12 @@ public class Client implements KeyListener {
         username.setVisible(true);
     }
 
-    private void getUsername() {
-        if (input.getText().equals(""))
+    private void getInput() {
+        if (input.getText().trim().equals("") || inputIp.getText().trim().equals(""))
             return;
     
         clientName = input.getText();
+        serverIp = inputIp.getText();
         
         try {
             core();
@@ -71,7 +77,7 @@ public class Client implements KeyListener {
     private void core() throws UnknownHostException, IOException {
         // the method core() manages the connection to the server and starts
         // the chat frame
-        this.socket = new Socket("127.0.0.1", 8080);
+        this.socket = new Socket(serverIp, 8080);
         this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.bufferedWriter= new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
@@ -147,7 +153,7 @@ public class Client implements KeyListener {
         // if the user clicks the button, the sendMessage method is launched
         enterBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (input.getText().equals(""))
+                if (input.getText().trim().equals(""))
                     return;
                 
                 sendMessage(input.getText());
@@ -157,7 +163,7 @@ public class Client implements KeyListener {
 
     private void sendMessage(String messageToSend) {
         try {
-            if (messageToSend.equals("exit()")) {
+            if (messageToSend.equals("/exit")) {
                 closeEverything(socket);
                 System.exit(0);
             }

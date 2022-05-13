@@ -1,6 +1,6 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.*;
 
 /*
  * When a client connects the server spawns a thread to handle the client.
@@ -17,6 +17,7 @@ public class ClientHandler implements Runnable {
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String clientUsername;
+    private int id;
 
     // Creating the client handler from the socket the server passes.
     public ClientHandler(Socket socket) {
@@ -24,6 +25,9 @@ public class ClientHandler implements Runnable {
             this.socket = socket;
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter= new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            Random rand = new Random();
+
+            this.id = rand.nextInt(0, 1000000);
 
             // When a client connects their username is sent.
             this.clientUsername = bufferedReader.readLine();
@@ -31,8 +35,8 @@ public class ClientHandler implements Runnable {
             clientHandlers.add(this);
             unicastMessage("Welcome to this Chat Room, " + clientUsername + "!\nUsers connected: " + clientHandlers.size() + "\n");
             broadcastMessage("\r😃 SERVER: " + clientUsername + " has entered the chat!\n");
-        } catch (IOException | NullPointerException e) {
-            closeEverything(socket, this);
+        } catch (IOException e) {
+            closeEverything();
         }
     }
 
@@ -44,11 +48,16 @@ public class ClientHandler implements Runnable {
         // Continue to listen for messages while a connection with the client is still established.
         while (socket.isConnected()) {
             try {
+                if (bufferedReader.read() == -1) {
+                    closeEverything();
+                    break;
+                }
+
                 // Read what the client sent and then send it to every other client.
                 messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
-            } catch (IOException | NullPointerException e) {
-                closeEverything(socket, this);
+            } catch (IOException e) {
+                closeEverything();
                 break;
             }
         }
@@ -60,49 +69,46 @@ public class ClientHandler implements Runnable {
     public void broadcastMessage(String messageToSend) {
         ArrayList<ClientHandler> clone = (ArrayList<ClientHandler>) clientHandlers.clone();
 
-        for (ClientHandler clientHandler : clone) {
+        clone.forEach(elm -> {
             try {
-                // You don't want to broadcast the message to the user who sent it.
-                if (!clientHandler.clientUsername.equals(clientUsername)) {
-                    clientHandler.bufferedWriter.write(messageToSend);
-                    clientHandler.bufferedWriter.newLine();
-                    clientHandler.bufferedWriter.flush();
+                if (!(elm.id == id)) {
+                    elm.bufferedWriter.write(messageToSend);
+                    elm.bufferedWriter.newLine();
+                    elm.bufferedWriter.flush();
                 }
-            } catch (IOException | NullPointerException e) {
-                closeEverything(socket, clientHandler);
+            } catch (IOException | NullPointerException ex) {
+                clientHandlers.remove(elm);
             }
-        }
+        });
     }
 
     // Send a message to a client, specifically the last client that established a connection.
     public void unicastMessage(String messageToSend) {
         ArrayList<ClientHandler> clone = (ArrayList<ClientHandler>) clientHandlers.clone();
 
-        for (ClientHandler clientHandler : clone) {
-            if (clientHandler.clientUsername.equals(clientUsername)) {
+        clone.forEach(elm -> {
+            if (elm.id == id) {
                 try {
-                    clientHandler.bufferedWriter.write(messageToSend);
-                    clientHandler.bufferedWriter.newLine();
-                    clientHandler.bufferedWriter.flush();
-                } catch (IOException e) {
-                    closeEverything(socket, clientHandler);
+                    elm.bufferedWriter.write(messageToSend);
+                    elm.bufferedWriter.newLine();
+                    elm.bufferedWriter.flush();
+                } catch (IOException | NullPointerException ex) {
+                    clientHandlers.remove(elm);
                 }
             }
-        }
-    }
-
-    // If the client disconnects for any reason remove them from the list so a message isn't sent down a broken connection.
-    public void removeClientHandler(ClientHandler clientHandler) {
-        clientHandlers.remove(clientHandler);
-        broadcastMessage("\r😢 SERVER: " + clientUsername + " has left the chat!\n");
+        });
     }
 
     // Helper method to close everything so you don't have to repeat yourself.
-    public void closeEverything(Socket socket, ClientHandler clientHandler) {
+    public void closeEverything() {
         // The client disconnected or an error occurred so remove them from the list so no message is broadcasted.
-        removeClientHandler(clientHandler);
+        clientHandlers.remove(this);
+        broadcastMessage("\r😢 SERVER: " + clientUsername + " has left the chat!\n");
+        
         try {
             socket.close();
+            bufferedReader.close();
+            bufferedWriter.close();
         } catch (IOException e) { }
     }
 }
