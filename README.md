@@ -1,5 +1,5 @@
 # DESCRIPTION
-Yet another chat room program, but this time it's written very poorly in java.
+Yet another chat room program, but this time it's very poorly written in java.
 Any kind of suggestion is welcome.
 
 
