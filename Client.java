@@ -7,7 +7,7 @@ import java.net.*;
 
 public class Client implements KeyListener {
     String clientName, serverIp;
-    JFrame username, app;
+    JFrame firstFrame, app;
     JPanel panel, inputPanel;
     GridLayout layout;
     JLabel L1;
@@ -22,7 +22,7 @@ public class Client implements KeyListener {
 
     public void startGui() {
         // the first frame is used to enter the username
-        username = new JFrame("Enter username");
+        firstFrame = new JFrame("Enter username");
         font = new Font("Monospace", Font.PLAIN, 16);
         font1 = new Font("Monospace", Font.PLAIN, 25);
 
@@ -52,12 +52,12 @@ public class Client implements KeyListener {
         panel.add(inputIp);
         panel.add(enterBtn);
 
-        username.add(panel, BorderLayout.CENTER);
+        firstFrame.add(panel, BorderLayout.CENTER);
 
-        username.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        username.pack();
-        username.setLocationRelativeTo(null);
-        username.setVisible(true);
+        firstFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        firstFrame.pack();
+        firstFrame.setLocationRelativeTo(null);
+        firstFrame.setVisible(true);
     }
 
     private void getInput() {
@@ -87,7 +87,7 @@ public class Client implements KeyListener {
         bufferedWriter.flush();
 
         // make the first frame invisible
-        username.setVisible(false);
+        firstFrame.setVisible(false);
         app = new JFrame("App");
         enterBtn = new JButton("Send message");
         enterBtn.setFont(font1);

@@ -52,13 +52,14 @@ public class ClientHandler implements Runnable {
         // Continue to listen for messages while a connection with the client is still established.
         while (socket.isConnected()) {
             try {
-                if (bufferedReader.read() == -1) {
+                messageFromClient = bufferedReader.readLine();
+
+                if (messageFromClient == null) {
                     closeEverything();
                     break;
                 }
 
                 // Read what the client sent and then send it to every other client.
-                messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
             } catch (IOException e) {
                 closeEverything();
