@@ -17,7 +17,7 @@ public class ClientHandler implements Runnable {
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String clientUsername;
-    private int id;
+    private String id;
 
     // Creating the client handler from the socket the server passes.
     public ClientHandler(Socket socket) {
@@ -27,7 +27,11 @@ public class ClientHandler implements Runnable {
             this.bufferedWriter= new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             Random rand = new Random();
 
-            this.id = rand.nextInt(0, 1000000);
+            String sample = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            this.id = "";
+
+            for (int i = 0; i < 16; i++)
+                this.id += sample.charAt(rand.nextInt(0, sample.length()));
 
             // When a client connects their username is sent.
             this.clientUsername = bufferedReader.readLine();
@@ -71,7 +75,7 @@ public class ClientHandler implements Runnable {
 
         clone.forEach(elm -> {
             try {
-                if (!(elm.id == id)) {
+                if (!elm.id.equals(id)) {
                     elm.bufferedWriter.write(messageToSend);
                     elm.bufferedWriter.newLine();
                     elm.bufferedWriter.flush();
@@ -87,7 +91,7 @@ public class ClientHandler implements Runnable {
         ArrayList<ClientHandler> clone = (ArrayList<ClientHandler>) clientHandlers.clone();
 
         clone.forEach(elm -> {
-            if (elm.id == id) {
+            if (elm.id.equals(id)) {
                 try {
                     elm.bufferedWriter.write(messageToSend);
                     elm.bufferedWriter.newLine();
