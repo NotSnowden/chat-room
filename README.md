@@ -8,7 +8,7 @@ https://www.youtube.com/watch?v=gLfuZrrfKes&ab_channel=WittCode
 # INSTALLATION
 
 download the repo\
-`git clone https://github.com/NotSnowden/java-chat-room`
+`git clone https://github.com/NotSnowden/chat-room`
 
 compile\
 `make`
