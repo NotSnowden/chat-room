@@ -1,5 +1,5 @@
 # DESCRIPTION
-Yet another chat room program, but this time it's very poorly written in java.\
+Yet another chat room, but this one is written very poorly in java.\
 Any kind of suggestion is welcome.\
 The code base comes from the Youtuber WittCode, check out his video\
 https://www.youtube.com/watch?v=gLfuZrrfKes&ab_channel=WittCode
