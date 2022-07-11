@@ -16,7 +16,7 @@ compile\
 start the server\
 `java Server`
 
-using another machine, start the client (tests on localhost are obviously supported)\
+using another machine, start the client (tests on localhost are supported)\
 `java Client`
 
 **enjoy!**
