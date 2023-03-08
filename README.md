@@ -7,7 +7,7 @@ https://www.youtube.com/watch?v=gLfuZrrfKes&ab_channel=WittCode
 
 # INSTALLATION
 
-download the repo\
+clone the repo\
 `git clone https://github.com/NotSnowden/chat-room`
 
 compile\
